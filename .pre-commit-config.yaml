@@ -1,0 +1,20 @@
+default_stages: [commit, push]
+fail_fast: true
+repos:
+  - repo: local
+    hooks:
+      - id: jupyter-notebook-cleanup
+        name: jupyter-notebook-cleanup
+        language: python
+        entry: jupyter-notebook-cleanup
+        files: \.ipynb$
+        types: ["file"]
+
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.8
+    hooks:
+      - id: flake8
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.740
+    hooks:
+      - id: mypy

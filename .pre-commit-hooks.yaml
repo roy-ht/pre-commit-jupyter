@@ -1,0 +1,8 @@
+- id: jupyter-notebook-cleanup
+  name: jupyter-notebook-cleanup
+  description: "Remove cel output for better security"
+  entry: jupyter-notebook-cleanup
+  language: python
+  language_version: python3
+  files: \.ipynb$
+  types: ["file"]
