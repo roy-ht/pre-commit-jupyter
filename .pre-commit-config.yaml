@@ -7,6 +7,10 @@ repos:
         name: jupyter-notebook-cleanup
         language: python
         entry: jupyter-notebook-cleanup
+        args:
+          - --remove-kernel-metadata
+          - --pin-patterns
+          - "[pin];[donotremove]"
         files: \.ipynb$
         types: ["file"]
 
