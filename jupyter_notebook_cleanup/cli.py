@@ -48,16 +48,16 @@ def remove_output_file(path, patterns, remove_kernel_metadata, preview):
         with open(path, "rt") as f:
             data = json.load(f, object_pairs_hook=OrderedDict)
         new_data = remove_output_object(data, patterns, remove_kernel_metadata)
+        before_j = json.dumps(data, **dump_args)
+        after_j = json.dumps(new_data, **dump_args)
         if preview:
-            before_j = json.dumps(data, **dump_args).splitlines()
-            after_j = json.dumps(new_data, **dump_args).splitlines()
-            print("\n".join(difflib.unified_diff(before_j, after_j, fromfile="before", tofile="after")))
+            before_l, after_l = before_j.splitlines(), after_j.splitlines()
+            print("\n".join(difflib.unified_diff(before_l, after_l, fromfile="before", tofile="after")))
         else:
-            # overwrite to the original file
-            with open(path, "wt", encoding="utf-8") as fo:
-                json.dump(new_data, fo, **dump_args)
-                # copy original timestamps
-                shutil.copystat(tpath, path)
+            if before_j != after_j:  # overwrite to the original file
+                with open(path, "wt", encoding="utf-8") as fo:
+                    json.dump(new_data, fo, **dump_args)
+            shutil.copystat(tpath, path)  # copy original timestamps
 
 
 def remove_output_object(data, patterns, remove_kernel_metadata):
