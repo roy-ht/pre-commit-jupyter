@@ -43,7 +43,7 @@ def remove_output_file(path, patterns, remove_kernel_metadata, preview):
     dump_args = {"ensure_ascii": False, "separators": (",", ": "), "indent": 1}
     # to preserve timestamps, making temporal copy
     with tempfile.TemporaryDirectory() as tdir:
-        tpath = os.path.join(tdir, "jupyter-notebook-cleanup-", uuid.uuid1())
+        tpath = os.path.join(tdir, "jupyter-notebook-cleanup-", str(uuid.uuid1()))
         shutil.copy2(path, tpath)
         with open(path, "rt") as f:
             data = json.load(f, object_pairs_hook=OrderedDict)
