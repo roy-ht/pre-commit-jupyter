@@ -2,14 +2,11 @@ import argparse
 import copy
 import difflib
 import json
+import os
+import shutil
+import tempfile
+import uuid
 from collections import OrderedDict
-
-
-def main():
-    args = parse_args()
-    patterns = args.pin_patterns.split(";")
-    for path in args.files:
-        remove_output(path, patterns=patterns, preview=args.dry_run, remove_kernel_metadata=args.remove_kernel_metadata)
 
 
 def parse_args():
@@ -23,6 +20,15 @@ def parse_args():
     return psr.parse_args()
 
 
+def main():
+    args = parse_args()
+    patterns = args.pin_patterns.split(";")
+    for path in args.files:
+        remove_output_file(
+            path, patterns=patterns, remove_kernel_metadata=args.remove_kernel_metadata, preview=args.dry_run
+        )
+
+
 def check_if_unremovable(source, patterns):
     """comment annotation must be the first line and started with #"""
     for s in source:
@@ -32,10 +38,29 @@ def check_if_unremovable(source, patterns):
     return False
 
 
-def remove_output(path, patterns, preview, remove_kernel_metadata):
+def remove_output_file(path, patterns, remove_kernel_metadata, preview):
     """If preview=True, Do not overwrite a path, only display an diffs"""
-    with open(path, "rt") as f:
-        data = json.load(f, object_pairs_hook=OrderedDict)
+    dump_args = {"ensure_ascii": False, "separators": (",", ": "), "indent": 1}
+    # to preserve timestamps, making temporal copy
+    with tempfile.TemporaryDirectory() as tdir:
+        tpath = os.path.join(tdir, "jupyter-notebook-cleanup-", uuid.uuid1())
+        shutil.copy2(path, tpath)
+        with open(path, "rt") as f:
+            data = json.load(f, object_pairs_hook=OrderedDict)
+        new_data = remove_output_object(data, patterns, remove_kernel_metadata)
+        if preview:
+            before_j = json.dumps(data, **dump_args).splitlines()
+            after_j = json.dumps(new_data, **dump_args).splitlines()
+            print("\n".join(difflib.unified_diff(before_j, after_j, fromfile="before", tofile="after")))
+        else:
+            # overwrite to the original file
+            with open(path, "wt", encoding="utf-8") as fo:
+                json.dump(new_data, fo, **dump_args)
+                # copy original timestamps
+                shutil.copystat(tpath, path)
+
+
+def remove_output_object(data, patterns, remove_kernel_metadata):
     new_data = copy.deepcopy(data)
     if remove_kernel_metadata:
         kernelspec = new_data.get("metadata", {}).get("kernelspec", {})
@@ -53,14 +78,7 @@ def remove_output(path, patterns, preview, remove_kernel_metadata):
             if check_if_unremovable(source, patterns):
                 continue
             cell["outputs"] = []
-    dump_args = {"ensure_ascii": False, "separators": (",", ": "), "indent": 1}
-    if preview:
-        before_j = json.dumps(data, **dump_args).splitlines()
-        after_j = json.dumps(new_data, **dump_args).splitlines()
-        print("\n".join(difflib.unified_diff(before_j, after_j, fromfile="before", tofile="after")))
-    else:
-        with open(path, "wt", encoding="utf-8") as fo:
-            json.dump(new_data, fo, **dump_args)
+    return new_data
 
 
 if __name__ == "__main__":
