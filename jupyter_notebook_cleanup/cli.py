@@ -57,7 +57,7 @@ def remove_output_file(path, patterns, remove_kernel_metadata, preview):
             if before_j != after_j:  # overwrite to the original file
                 with open(path, "wt", encoding="utf-8") as fo:
                     json.dump(new_data, fo, **dump_args)
-            shutil.copystat(tpath, path)  # copy original timestamps
+        shutil.copystat(tpath, path)  # copy original timestamps
 
 
 def remove_output_object(data, patterns, remove_kernel_metadata):
