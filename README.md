@@ -3,8 +3,8 @@ pre-commit hook to remove cell output of .ipynb notebook and some metadata for b
 Sample config:
 ```
 repos:
-  - repo: https://github.com/rjdrenth/pre-commit-jupyter
-    rev: v1.2.1
+  - repo: https://github.com/roy-ht/pre-commit-jupyter
+    rev: v1.2.0
     hooks:
       - id: jupyter-notebook-cleanup
         args:
