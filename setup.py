@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="jupyter-notebook-cleanup",
-    version="1.0.0",
+    version="1.2.1",
     description="Automagically remove notebook outputs for better security",
     author="Hiroyuki Tanaka",
     author_email="aflc0x@gmail.com",
