@@ -4,7 +4,7 @@ Sample config:
 ```
 repos:
   - repo: https://github.com/roy-ht/pre-commit-jupyter
-    rev: v1.2.0
+    rev: v1.2.1
     hooks:
       - id: jupyter-notebook-cleanup
         args:
