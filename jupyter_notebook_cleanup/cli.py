@@ -45,7 +45,7 @@ def remove_output_file(path, patterns, remove_kernel_metadata, preview):
     with tempfile.TemporaryDirectory() as tdir:
         tpath = os.path.join(tdir, "jupyter-notebook-cleanup-" + str(uuid.uuid1()))
         shutil.copy2(path, tpath)
-        with open(path, "rt") as f:
+        with open(path, "rt", encoding="utf-8") as f:
             data = json.load(f, object_pairs_hook=OrderedDict)
         new_data = remove_output_object(data, patterns, remove_kernel_metadata)
         before_j = json.dumps(data, **dump_args)
