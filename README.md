@@ -8,7 +8,7 @@ repos:
     hooks:
       - id: jupyter-notebook-cleanup
         args:
-          - --remove-kernel-metadata
+          # - --remove-kernel-metadata
           - --pin-patterns
           - "[pin];[donotremove]"
 ```
