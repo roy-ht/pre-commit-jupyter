@@ -1,4 +1,4 @@
-pre-commit hook to remove cell output of .ipynb notebook and some metadata for better security.
+pre-commit hook to remove cell output of .ipynb notebook and some metadata for better security/easier git versioning.
 
 Sample config:
 ```
@@ -9,6 +9,7 @@ repos:
       - id: jupyter-notebook-cleanup
         args:
           # - --remove-kernel-metadata
+          # - --remove-widget-state
           - --pin-patterns
           - "[pin];[donotremove]"
 ```

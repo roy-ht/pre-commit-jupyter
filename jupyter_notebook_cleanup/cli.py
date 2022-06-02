@@ -14,6 +14,7 @@ def parse_args():
     psr.add_argument("files", nargs="*", help="ipynb files")
     psr.add_argument("--dry-run", action="store_true", default=False)
     psr.add_argument("--remove-kernel-metadata", action="store_true", default=False)
+    psr.add_argument("--remove-widget-state", action="store_true", default=False)
     psr.add_argument(
         "-p", "--pin-patterns", default="[pin]", help="semicolon-separated patterns (wildcards are not supported)"
     )
@@ -25,7 +26,8 @@ def main():
     patterns = args.pin_patterns.split(";")
     for path in args.files:
         remove_output_file(
-            path, patterns=patterns, remove_kernel_metadata=args.remove_kernel_metadata, preview=args.dry_run
+            path, patterns=patterns, remove_kernel_metadata=args.remove_kernel_metadata,
+            preview=args.dry_run, remove_widget_state=args.remove_widget_state
         )
 
 
@@ -38,7 +40,8 @@ def check_if_unremovable(source, patterns):
     return False
 
 
-def remove_output_file(path, patterns, remove_kernel_metadata, preview):
+def remove_output_file(path, patterns, remove_kernel_metadata, preview,
+                       remove_widget_state):
     """If preview=True, Do not overwrite a path, only display an diffs"""
     dump_args = {"ensure_ascii": False, "separators": (",", ": "), "indent": 1}
     # to preserve timestamps, making temporal copy
@@ -47,7 +50,8 @@ def remove_output_file(path, patterns, remove_kernel_metadata, preview):
         shutil.copy2(path, tpath)
         with open(path, "rt", encoding="utf-8") as f:
             data = json.load(f, object_pairs_hook=OrderedDict)
-        new_data = remove_output_object(data, patterns, remove_kernel_metadata)
+        new_data = remove_output_object(data, patterns, remove_kernel_metadata,
+                                        remove_widget_state)
         before_j = json.dumps(data, **dump_args)
         after_j = json.dumps(new_data, **dump_args)
         # ensure eof newlines
@@ -63,7 +67,7 @@ def remove_output_file(path, patterns, remove_kernel_metadata, preview):
         shutil.copystat(tpath, path)  # copy original timestamps
 
 
-def remove_output_object(data, patterns, remove_kernel_metadata):
+def remove_output_object(data, patterns, remove_kernel_metadata, remove_widget_state):
     new_data = copy.deepcopy(data)
     if remove_kernel_metadata:
         kernelspec = new_data.get("metadata", {}).get("kernelspec", {})
@@ -71,6 +75,8 @@ def remove_output_object(data, patterns, remove_kernel_metadata):
             kernelspec["display_name"] = ""
         if "name" in kernelspec:
             kernelspec["name"] = ""
+    if remove_widget_state:
+        new_data.get("metadata", {}).pop("widgets", None)
     for cell in new_data["cells"]:
         if "execution_count" in cell:
             cell["execution_count"] = None
